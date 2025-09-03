@@ -1,0 +1,449 @@
+{
+  "name": "Order Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ea4e4ed5-23c9-4ed2-b58d-c69e21cf1a0d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6f1517f6-428d-4538-9403-d71b71c935dd",
+      "name": "Webhook",
+      "webhookId": "ea4e4ed5-23c9-4ed2-b58d-c69e21cf1a0d"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an Order Processing Assistant for a restaurant.  \nYour job is to take raw inputs from the Webhook (customer details and their food order) and always log or mention in the customer order details google sheets.\n\n\nYOU WANT TO EXCECUTE THE NODE IN GOOGLE SHEET, SO THAT ALL THE DETAILS SHOULD BE AVAILABLE TO THE ANALYSIS.\n\nGOOGLE SHEET NAME IS: customer order details.(that is attached to the tools section)\n\n\nFields to capture:\n- Date and Time (use {{ $now }} for IST timestamp)\n- Customer Name (string only, no numbers)\n- Phone Number (10-digit number only, no letters)\n- Email ID (must end with @gmail.com or @yahoo.com)\n- Where they sit (if dining in hotel, else leave blank)\n- Delivery Address (if takeaway/delivery, else leave blank)\n- Items (array of objects with Item, Quantity, Price)\n- Total Amount (integer, sum of item prices × quantities)\n\nReturn the JSON exactly like this:\n\n{\n  \"Date and Time\": \"{{ $now }}\",\n  \"Customer Name\": \"string\",\n  \"Phone Number\": \"string\",\n  \"Email ID\": \"string\",\n  \"Where they sit (In Hotel)\": \"string\",\n  \"Delivery address\": \"string\",\n  \"Items\": [\n    {\"Item\": \"Paneer Butter Masala\", \"Quantity\": 1, \"Price\": 180},\n    {\"Item\": \"Masala Dosa\", \"Quantity\": 1, \"Price\": 90}\n  ],\n  \"Total Amount\": 270\n}\n",
+        "options": {
+          "systemMessage": "=You are an Order Processing Assistant for a restaurant.  \nYour job is to take raw inputs from the Webhook (customer details and their food order) and always log or mention in the customer order details google sheets.\n\n\nYOU WANT TO EXCECUTE THE NODE IN GOOGLE SHEET, SO THAT ALL THE DETAILS SHOULD BE AVAILABLE TO THE ANALYSIS.\n\nGOOGLE SHEET NAME IS: customer order details.(that is attached to the tools section)\n\n\nFields to capture:\n- Date and Time (use {{ $now }} for IST timestamp)\n- Customer Name (string only, no numbers)\n- Phone Number (10-digit number only, no letters)\n- Email ID (must end with @gmail.com or @yahoo.com)\n- Where they sit (if dining in hotel, else leave blank)\n- Delivery Address (if takeaway/delivery, else leave blank)\n- Items (array of objects with Item, Quantity, Price)\n- Total Amount (integer, sum of item prices × quantities)\n\nReturn the JSON exactly like this:\n\n{\n  \"Date and Time\": \"{{ $now }}\",\n  \"Customer Name\": \"string\",\n  \"Phone Number\": \"string\",\n  \"Email ID\": \"string\",\n  \"Where they sit (In Hotel)\": \"string\",\n  \"Delivery address\": \"string\",\n  \"Items\": [\n    {\"Item\": \"Paneer Butter Masala\", \"Quantity\": 1, \"Price\": 180},\n    {\"Item\": \"Masala Dosa\", \"Quantity\": 1, \"Price\": 90}\n  ],\n  \"Total Amount\": 270\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "77ef2d01-5bb5-456a-8226-a265266bc914",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "1e39969b-feb7-4d7e-8333-7386855b65ef",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body['Email ID'] }}",
+        "subject": "=Order Conformation ~  {{ $('Webhook').item.json.body['Customer Name'] }}",
+        "emailType": "text",
+        "message": "=Hello {{ $('Webhook').item.json.body['Customer Name'] }},\n\nThank you for placing your order with QuickBite!  \nI hope you love the experience here..\n\n\nHere are your order details:\n\n📅 Date & Time: {{ new Date().toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', year: 'numeric', month: '2-digit', day: '2-digit' }) }}\n👤 Name: {{ $('Webhook').item.json.body['Customer Name'] }} \n📞 Phone: {{ $('Webhook').item.json.body['Phone Number'] }} \n📧 Email:  {{ $('Webhook').item.json.body['Email ID'] }}\n🏠 Sitting Location:  {{ $('Webhook').item.json.body['Seat Number'] }}\n📦 Delivery Address: {{ $('Webhook').item.json.body['Delivery address'] }}\n\n\n🛒 Items Ordered: \n\n{{ $('Webhook').item.json.body.Items.map(item => `${item.Item} (Qty: ${item.Quantity}, ₹${item.Price})`).join('\\n') }}\n\n\n\n\n\n💰 Total Amount: ₹{{ $('Webhook').item.json.body['Total Amount'] }}\n\nYour order has been successfully received and is being processed, It will take 10 minutes to place it on your table.\n\nWe’ll notify you once it’s ready for delivery.\n\nThank you for choosing us!  \nBest Regards,  \n🍴 QuickBite\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        752,
+        0
+      ],
+      "id": "2975c071-e98f-4683-836e-d6753679fb48",
+      "name": "Send a message",
+      "webhookId": "3fd0e6b3-87c1-44dc-a2b5-c0f041fee935",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5UaXBa5G38aaycGb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        0
+      ],
+      "id": "b0b221dd-a2cb-46f2-ba65-9327c7c5837e",
+      "name": "Wait",
+      "webhookId": "6e2514ff-3de7-4ea4-a39f-b296cf3abcf8"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body['Email ID'] }}",
+        "subject": "Feedback for your Experience in QuickBite",
+        "emailType": "text",
+        "message": "=Hello , {{ $('Webhook').item.json.body['Customer Name'] }} We hope you enjoyed your meal! 🍴   \n\nWe’d love to hear your feedback to help us improve.    \n\n👉 Please share your thoughts here: \n\nhttps://mirai04.app.n8n.cloud/webhook-test/8d1b094b-1821-40de-98e9-6181edf788dd\n\nThank you for helping us serve you better!   \n\nBest Regards,   \n🍴 Quick Bite ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "a5a5feeb-c708-4643-8fe6-ae5d46cb5708",
+      "name": "Send a message2",
+      "webhookId": "ae0d042f-93aa-47ba-b06f-fa4e976ea120",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5UaXBa5G38aaycGb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Webhook: For action to the trigger by the Order Assistant Page",
+        "height": 80,
+        "width": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "a8465f9b-f2db-4ede-8e25-ea93aa8b461b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Agent: Responsible for the Model to work, and write the details of the customer in the google sheet",
+        "height": 80,
+        "width": 256,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "1a246375-c04a-4397-abea-727372692857",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "6733cc92-b265-4b23-9d80-d799cd0a38be",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tYtqshHUp5Vfxub2",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SD66JTw_c0WfXnGaukyPgUeheK4HPUffNT98_pV5JKU",
+          "mode": "list",
+          "cachedResultName": "Order Assitant",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SD66JTw_c0WfXnGaukyPgUeheK4HPUffNT98_pV5JKU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SD66JTw_c0WfXnGaukyPgUeheK4HPUffNT98_pV5JKU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $('Webhook').item.json.body['Customer Name'] }}",
+            "Phone Number": "={{ $('Webhook').item.json.body['Phone Number'] }}",
+            "Where they sit( In Hotel)": "={{ $('Webhook').item.json.body['Seat Number'] }}",
+            "Delivery address": "={{ $('Webhook').item.json.body['Delivery address'] }}",
+            "Total Amount": "={{ $('Webhook').item.json.body['Total Amount'] }}",
+            "Date and Time": "= {{ new Date().toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', year: 'numeric', month: '2-digit', day: '2-digit' }) }}",
+            "Items": "={{ $('Webhook').item.json.body.Items.map(item => `${item.Item} (Qty: ${item.Quantity}, ₹${item.Price})`).join('\\n') }}",
+            "Email": "={{ $('Webhook').item.json.body['Email ID'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date and Time",
+              "displayName": "Date and Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Where they sit( In Hotel)",
+              "displayName": "Where they sit( In Hotel)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Delivery address",
+              "displayName": "Delivery address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Items",
+              "displayName": "Items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Amount",
+              "displayName": "Total Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        0
+      ],
+      "id": "1de05c14-c64e-4c7f-8a2a-32c9055d8a5b",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HuS6xiDY1NZ81drN",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "It will log the user entered details in google sheet",
+        "height": 112,
+        "width": 176,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "8ed4a335-36bd-44fb-aa31-a797c625bdcd",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "It will send the Conformation of order to the entered Email address",
+        "height": 112,
+        "width": 160,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "c01603cf-755d-40ca-b1f0-665a887b8361",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "After Sending the conformation mail to the customer, it will wait for 30 mins to send the feedback mail",
+        "height": 128,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        928,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "ca52974c-1ad0-45df-97f5-496c5d0ebb1a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Feedback mail to the customer, to improve the facilities in QuickBite",
+        "height": 128,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "593efd04-90a2-4af8-bcef-5183d88f5af0",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6b708509-f84f-4211-a540-7a3b1bf5777d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a6ef7ed15882a47db3d43016fa207c5f841e5ec8b6139ab31daeae4a7e60fab2"
+  },
+  "id": "F0aMeDYStykBJnWs",
+  "tags": []
+}

@@ -1,0 +1,380 @@
+{
+  "name": "Feedback to the QuickBite",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cf86520e-05f2-4b17-979c-331e9fadd434",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "79527e78-6519-4a6f-b624-0185473fb0ce",
+      "name": "Webhook",
+      "webhookId": "cf86520e-05f2-4b17-979c-331e9fadd434"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.customerName }} has submitted feedback. Here are the details:\n\n- Phone Number: {{ $json.body.phoneNumber }}\n- Email Address: {{ $json.body.emailAddress }}\n- Age: {{ $json.body.age }}\n- Food Quality: {{ $json.body.foodQuality }}\n- Ambience: {{ $json.body.ambience }}\n- Service Quality: {{ $json.body.serviceQuality }}\n- Hygiene: {{ $json.body.hygiene }}\n- Value for Money: {{ $json.body.valueForMoney }}\n- Additional Comments: {{ $json.body.comments }}\n\nPlease analyze this and return structured feedback data as per the system instructions.\n",
+        "options": {
+          "systemMessage": "You are a helpful assistant designed to extract structured feedback data from customer inputs submitted via a restaurant feedback form. Your goal is to analyze the customer's message and return a valid JSON object with the following keys:\n\n- Customer Name: Full name of the customer\n- Phone Number: 10-digit contact number\n- Email Address: Customer's email\n- Age: Age of the customer\n- Sentiment: One of \"Positive\", \"Neutral\", or \"Negative\" based on ratings and comments\n- Action Item: A short actionable suggestion for the restaurant team\n- Feedback Summary: A concise summary of the customer's experience\n- Order Type: \"Dine-in\" if Table Number is present, \"Takeaway\" if Delivery Address is present, otherwise \"Unknown\"\n- Ratings: Include foodQuality, ambience, serviceQuality, hygiene as integers (1–5)\n- Value for Money: true or false\n- Additional Comments: Raw feedback text from the customer\n\nAlways return a valid JSON object. Do not include any extra commentary or explanation.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3e0b99aa-6635-4e83-9bdd-5ab5e0c2e30e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "c8cab24b-6a37-4b37-8142-5e05b80eab28",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tYtqshHUp5Vfxub2",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SD66JTw_c0WfXnGaukyPgUeheK4HPUffNT98_pV5JKU",
+          "mode": "list",
+          "cachedResultName": "Order Assitant",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SD66JTw_c0WfXnGaukyPgUeheK4HPUffNT98_pV5JKU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1388263657,
+          "mode": "list",
+          "cachedResultName": "Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SD66JTw_c0WfXnGaukyPgUeheK4HPUffNT98_pV5JKU/edit#gid=1388263657"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Webhook').item.json.body.customerName }}",
+            "Phone Number": "={{ $('Webhook').item.json.body.phoneNumber }}",
+            "Email address": "={{ $('Webhook').item.json.body.emailAddress }}",
+            "Age": "={{ $('Webhook').item.json.body.age }}",
+            "Food quality": "={{ $('Webhook').item.json.body.foodQuality }}",
+            "Ambience": "={{ $('Webhook').item.json.body.ambience }}",
+            "Service quality": "={{ $('Webhook').item.json.body.serviceQuality }}",
+            "Hygiene": "={{ $('Webhook').item.json.body.hygiene }}",
+            "Overall Experience": "={{ $('Webhook').item.json.body.valueForMoney }}",
+            "Additional Comments": "={{ $('Webhook').item.json.body.comments }}",
+            "Date": "={{ $now.toLocaleString() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email address",
+              "displayName": "Email address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Age",
+              "displayName": "Age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Food quality",
+              "displayName": "Food quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ambience",
+              "displayName": "Ambience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service quality",
+              "displayName": "Service quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Hygiene",
+              "displayName": "Hygiene",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Overall Experience",
+              "displayName": "Overall Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Additional Comments",
+              "displayName": "Additional Comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        0
+      ],
+      "id": "7256f4b5-9924-4cfd-8b45-ab127f223c62",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HuS6xiDY1NZ81drN",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Email address'] }}",
+        "subject": "=Thank you for your feedback ~  {{ $json.Name }}",
+        "emailType": "text",
+        "message": "=Subject: Thank You for Your Feedback ~ {{ $json.Name }}\n\nDear {{ $json.Name }},\n\nThank you so much for taking the time to share your feedback with us. We truly appreciate your thoughts and insights—it helps us improve and serve you better.\n\nWe're grateful you chose to experience QuickBite, and we’re committed to making every visit memorable. Your feedback has been carefully reviewed, and we’ll take the necessary steps to enhance your experience.\n\nWe look forward to welcoming you back again soon. Until then, stay well and keep smiling 😊\n\nWarm regards,  \nThe QuickBite Team\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        768,
+        16
+      ],
+      "id": "0c67c094-8733-438c-8f6e-a8a9d8424284",
+      "name": "Send a message",
+      "webhookId": "84177a17-5dd2-4bce-b027-376eb8ec8d0d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5UaXBa5G38aaycGb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Webhook: For action to the trigger by the Order Assistant Page",
+        "height": 96,
+        "width": 160,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -16,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "4c0350e4-56ad-45ea-b42e-46cbdef78db1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Agent: Responsible for the Model to work, and write the details of the customer in the google sheet",
+        "height": 80,
+        "width": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "3f017a38-8659-4ed7-aee0-95554b0b78c7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "96129fbe-7c46-4f10-9a36-feeeefeba95a",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "It will log the user entered feedback details in google sheet",
+        "height": 80,
+        "width": 176,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "40242cf7-41d2-4384-871c-be85fddf1a2a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "It will send the greetings of order to the entered Email address of the customer",
+        "height": 96,
+        "width": 192,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "d45989bd-6ca0-4af6-9c36-757214497557",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f17866eb-5d08-4710-9506-f7cc72b4a498",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a6ef7ed15882a47db3d43016fa207c5f841e5ec8b6139ab31daeae4a7e60fab2"
+  },
+  "id": "UcY5QoplFuKH6cBb",
+  "tags": []
+}
